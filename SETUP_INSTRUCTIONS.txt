@@ -1,0 +1,178 @@
+================================================================================
+ST-GCN DANCE POSE GENERATION - INFERENCE SETUP INSTRUCTIONS
+================================================================================
+
+CURRENT ISSUE: Python 3.13.5 is too new for MediaPipe
+SOLUTION: Use Python 3.12 or 3.11
+
+================================================================================
+QUICK SETUP (Choose One Method)
+================================================================================
+
+METHOD 1: Automated Setup with Python 3.12
+-------------------------------------------
+1. Install Python 3.12 from: https://www.python.org/downloads/
+2. Run: setup_python312.bat
+3. Done!
+
+METHOD 2: Automated Setup with Conda (Recommended)
+---------------------------------------------------
+1. Install Miniconda from: https://docs.conda.io/en/latest/miniconda.html
+2. Run: setup_conda.bat
+3. Done!
+
+METHOD 3: Manual Setup
+----------------------
+See: PYTHON_VERSION_FIX.md for detailed instructions
+
+================================================================================
+AFTER SETUP - HOW TO USE
+================================================================================
+
+1. Activate Environment:
+   - Python venv: venv_stgcn\Scripts\activate
+   - Conda: conda activate stgcn
+
+2. Verify Setup:
+   python test_inference_setup.py
+
+3. Run Inference:
+   python stgcn_inference.py --video_path your_dance_video.mp4
+
+4. Check Output:
+   type generated_poses.json
+
+================================================================================
+FILES CREATED FOR YOU
+================================================================================
+
+SETUP FILES:
+  - setup_python312.bat          Automated setup with Python 3.12
+  - setup_conda.bat              Automated setup with Conda
+  - requirements_inference.txt   Python dependencies
+
+MAIN SCRIPT:
+  - stgcn_inference.py          Main inference script (production-ready)
+
+HELPER SCRIPTS:
+  - test_inference_setup.py     Validates your setup
+  - example_usage.py            Usage examples
+
+DOCUMENTATION:
+  - README_FIRST.md             START HERE - Python version issue
+  - PYTHON_VERSION_FIX.md       Detailed Python version solutions
+  - QUICK_START.md              Quick reference guide
+  - INFERENCE_README.md         Complete user guide
+  - DEPLOYMENT_GUIDE.md         Web deployment guide
+  - INFERENCE_FILES_SUMMARY.md  Overview of all files
+  - SETUP_INSTRUCTIONS.txt      This file
+
+================================================================================
+RECOMMENDED WORKFLOW
+================================================================================
+
+Step 1: Install Python 3.12
+   Download from: https://www.python.org/downloads/
+   OR install Miniconda: https://docs.conda.io/en/latest/miniconda.html
+
+Step 2: Run Setup Script
+   Double-click: setup_python312.bat
+   OR: setup_conda.bat
+
+Step 3: Verify Installation
+   python test_inference_setup.py
+
+Step 4: Test Inference
+   python stgcn_inference.py --video_path test_video.mp4
+
+Step 5: Deploy (Optional)
+   See DEPLOYMENT_GUIDE.md for Flask/FastAPI examples
+
+================================================================================
+TROUBLESHOOTING
+================================================================================
+
+Problem: "Python 3.12 not found"
+Solution: Install Python 3.12 or use Conda
+
+Problem: "MediaPipe installation failed"
+Solution: Ensure you're using Python 3.12 (not 3.13)
+Check: python --version
+
+Problem: "Model file not found"
+Solution: Ensure model_outputs/stgcn_regressor.pth exists
+
+Problem: Setup script fails
+Solution: Run commands manually (see PYTHON_VERSION_FIX.md)
+
+================================================================================
+WHAT EACH FILE DOES
+================================================================================
+
+stgcn_inference.py
+  - Loads your trained ST-GCN model
+  - Processes uploaded video
+  - Extracts pose sequences
+  - Generates future poses
+  - Outputs JSON results
+
+test_inference_setup.py
+  - Checks Python version
+  - Verifies dependencies installed
+  - Checks model files exist
+  - Tests CUDA availability
+
+setup_python312.bat
+  - Creates Python 3.12 virtual environment
+  - Installs all dependencies
+  - Runs validation
+
+setup_conda.bat
+  - Creates Conda environment with Python 3.12
+  - Installs all dependencies
+  - Runs validation
+
+================================================================================
+NEXT STEPS AFTER SETUP
+================================================================================
+
+1. Test with your dance video:
+   python stgcn_inference.py --video_path your_video.mp4
+
+2. Integrate with web application:
+   See DEPLOYMENT_GUIDE.md for Flask/FastAPI examples
+
+3. Optimize performance:
+   - Use GPU if available
+   - Adjust --proc_fps parameter
+   - Cache loaded models
+
+4. Deploy to production:
+   - Docker deployment
+   - Cloud deployment (AWS, GCP)
+   - See DEPLOYMENT_GUIDE.md
+
+================================================================================
+SUPPORT & DOCUMENTATION
+================================================================================
+
+Quick Help:       QUICK_START.md
+Python Issues:    PYTHON_VERSION_FIX.md
+Complete Guide:   INFERENCE_README.md
+Web Deployment:   DEPLOYMENT_GUIDE.md
+All Files Info:   INFERENCE_FILES_SUMMARY.md
+
+================================================================================
+SUMMARY
+================================================================================
+
+You have Python 3.13.5, but need Python 3.12 for MediaPipe compatibility.
+
+EASIEST SOLUTION:
+1. Install Miniconda: https://docs.conda.io/en/latest/miniconda.html
+2. Run: setup_conda.bat
+3. Follow on-screen instructions
+
+After setup, you'll have a fully working inference system ready for deployment!
+
+================================================================================

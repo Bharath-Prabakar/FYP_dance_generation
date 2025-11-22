@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dance Pose Viewer - 3D Human Mesh</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            font-family: Arial, sans-serif;
+        }
+        #container {
+            width: 100vw;
+            height: 100vh;
+        }
+        #controls {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            border: none;
+            border-radius: 5px;
+            background: #4CAF50;
+            color: white;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        button:hover {
+            background: #45a049;
+        }
+        #info {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 15px;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        input[type="file"] {
+            margin: 10px 0;
+        }
+        #frameSlider {
+            width: 200px;
+        }
+    </style>
+</head>
+<body>
+    <div id="container"></div>
+    
+    <div id="controls">
+        <h3>Dance Pose Viewer</h3>
+        <input type="file" id="jsonFile" accept=".json">
+        <br>
+        <button id="playBtn">▶ Play</button>
+        <button id="pauseBtn">⏸ Pause</button>
+        <button id="resetBtn">⏮ Reset</button>
+        <br>
+        <label>Frame: <input type="range" id="frameSlider" min="0" max="100" value="0"></label>
+        <span id="frameNum">0</span>
+        <br>
+        <label>Speed: <input type="range" id="speedSlider" min="1" max="60" value="30"></label>
+        <span id="speedNum">30</span> FPS
+    </div>
+    
+    <div id="info">
+        <div>Total Frames: <span id="totalFrames">0</span></div>
+        <div>Current Frame: <span id="currentFrame">0</span></div>
+        <div>Status: <span id="status">Load JSON file</span></div>
+    </div>
+
+    <!-- Three.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    
+    <script>
+        // Three.js setup
+        let scene, camera, renderer, controls;
+        let humanMesh, skeleton;
+        let poseData = null;
+        let currentFrame = 0;
+        let isPlaying = false;
+        let frameRate = 30;
+        let lastFrameTime = 0;
+        
+        // MediaPipe joint connections for body mesh
+        const connections = [
+            [11, 12], [11, 13], [13, 15], [12, 14], [14, 16], // Arms
+            [11, 23], [12, 24], [23, 24], // Torso
+            [23, 25], [25, 27], [24, 26], [26, 28], // Legs
+            [0, 1], [1, 2], [2, 3], [3, 7] // Head
+        ];
+        
+        function init() {
+            // Scene
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0xf0f0f0);
+            
+            // Camera
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.set(0, 1, 3);
+            
+            // Renderer
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            document.getElementById('container').appendChild(renderer.domElement);
+            
+            // Controls
+            controls = new THREE.OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true;
+            
+            // Lighting
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+            scene.add(ambientLight);
+            
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+            directionalLight.position.set(5, 10, 5);
+            scene.add(directionalLight);
+            
+            // Grid
+            const gridHelper = new THREE.GridHelper(10, 10);
+            scene.add(gridHelper);
+            
+            // Create human mesh
+            createHumanMesh();
+            
+            // Event listeners
+            document.getElementById('jsonFile').addEventListener('change', loadJSON);
+            document.getElementById('playBtn').addEventListener('click', () => isPlaying = true);
+            document.getElementById('pauseBtn').addEventListener('click', () => isPlaying = false);
+            document.getElementById('resetBtn').addEventListener('click', () => currentFrame = 0);
+            document.getElementById('frameSlider').addEventListener('input', (e) => {
+                currentFrame = parseInt(e.target.value);
+                updatePose();
+            });
+            document.getElementById('speedSlider').addEventListener('input', (e) => {
+                frameRate = parseInt(e.target.value);
+                document.getElementById('speedNum').textContent = frameRate;
+            });
+            
+            window.addEventListener('resize', onWindowResize);
+            
+            animate();
+        }
+        
+        function createHumanMesh() {
+            // Create sphere for each joint
+            const jointGeometry = new THREE.SphereGeometry(0.03, 16, 16);
+            const jointMaterial = new THREE.MeshPhongMaterial({ color: 0xff5555 });
+            
+            // Create cylinders for bones
+            const boneGeometry = new THREE.CylinderGeometry(0.02, 0.02, 1, 8);
+            const boneMaterial = new THREE.MeshPhongMaterial({ color: 0xE0AC69 });
+            
+            humanMesh = new THREE.Group();
+            
+            // Create 33 joint spheres
+            for (let i = 0; i < 33; i++) {
+                const joint = new THREE.Mesh(jointGeometry, jointMaterial);
+                joint.name = `joint_${i}`;
+                humanMesh.add(joint);
+            }
+            
+            // Create bones (connections)
+            connections.forEach((conn, idx) => {
+                const bone = new THREE.Mesh(boneGeometry, boneMaterial);
+                bone.name = `bone_${idx}`;
+                humanMesh.add(bone);
+            });
+            
+            scene.add(humanMesh);
+        }
+        
+        function loadJSON(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    poseData = JSON.parse(e.target.result);
+                    document.getElementById('totalFrames').textContent = poseData.total_frames;
+                    document.getElementById('frameSlider').max = poseData.total_frames - 1;
+                    document.getElementById('status').textContent = 'Ready';
+                    console.log(`Loaded ${poseData.total_frames} poses`);
+                } catch (error) {
+                    alert('Error loading JSON: ' + error.message);
+                }
+            };
+            reader.readAsText(file);
+        }
+        
+        function updatePose() {
+            if (!poseData || !poseData.poses[currentFrame]) return;
+            
+            const pose = poseData.poses[currentFrame];
+            
+            // Convert flat array to 33 joints
+            const joints = [];
+            for (let i = 0; i < 33; i++) {
+                joints.push(new THREE.Vector3(
+                    pose[i * 3],
+                    -pose[i * 3 + 1], // Invert Y for proper orientation
+                    pose[i * 3 + 2]
+                ));
+            }
+            
+            // Update joint positions
+            joints.forEach((pos, i) => {
+                const joint = humanMesh.getObjectByName(`joint_${i}`);
+                if (joint) {
+                    joint.position.copy(pos);
+                }
+            });
+            
+            // Update bone positions and rotations
+            connections.forEach((conn, idx) => {
+                const bone = humanMesh.getObjectByName(`bone_${idx}`);
+                if (bone) {
+                    const start = joints[conn[0]];
+                    const end = joints[conn[1]];
+                    
+                    // Position at midpoint
+                    bone.position.copy(start).add(end).multiplyScalar(0.5);
+                    
+                    // Scale to distance
+                    const distance = start.distanceTo(end);
+                    bone.scale.y = distance;
+                    
+                    // Rotate to align with connection
+                    const direction = new THREE.Vector3().subVectors(end, start);
+                    bone.quaternion.setFromUnitVectors(
+                        new THREE.Vector3(0, 1, 0),
+                        direction.normalize()
+                    );
+                }
+            });
+            
+            // Update UI
+            document.getElementById('currentFrame').textContent = currentFrame;
+            document.getElementById('frameNum').textContent = currentFrame;
+            document.getElementById('frameSlider').value = currentFrame;
+        }
+        
+        function animate(time) {
+            requestAnimationFrame(animate);
+            
+            if (isPlaying && poseData) {
+                const deltaTime = time - lastFrameTime;
+                const frameDuration = 1000 / frameRate;
+                
+                if (deltaTime >= frameDuration) {
+                    currentFrame = (currentFrame + 1) % poseData.total_frames;
+                    updatePose();
+                    lastFrameTime = time;
+                }
+            }
+            
+            controls.update();
+            renderer.render(scene, camera);
+        }
+        
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+        
+        // Initialize
+        init();
+    </script>
+</body>
+</html>

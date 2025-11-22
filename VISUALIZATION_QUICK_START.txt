@@ -1,0 +1,116 @@
+================================================================================
+DANCE POSE VISUALIZATION - QUICK START
+================================================================================
+
+You have: generated_poses.json (99-D pose vectors)
+You want: Realistic human mesh visualization for presentations
+
+================================================================================
+EASIEST METHOD: PyVista (Python) - 2 minutes setup
+================================================================================
+
+1. Install:
+   pip install pyvista numpy pillow tqdm
+
+2. Interactive 3D Viewer:
+   python visualize_human_mesh.py --json generated_poses.json --mode interactive
+   
+   Controls: Arrow keys to navigate, mouse to rotate
+
+3. Create Video:
+   python visualize_human_mesh.py --json generated_poses.json --mode video --output dance.mp4
+
+4. Export Images:
+   python visualize_human_mesh.py --json generated_poses.json --mode images --output poses
+
+================================================================================
+WEB VIEWER: No Installation Required
+================================================================================
+
+1. Open: web_pose_viewer.html in Chrome/Firefox
+2. Click "Choose File" and select generated_poses.json
+3. Click Play button
+4. Use controls to navigate
+
+Perfect for:
+- Sharing with domain experts
+- Web presentations
+- Mobile viewing
+
+================================================================================
+COMPARISON
+================================================================================
+
+Method          | Quality | Ease  | Best For
+----------------|---------|-------|----------------------------------
+PyVista         | ⭐⭐⭐   | ⭐⭐⭐⭐⭐ | Quick visualization, videos
+Web Viewer      | ⭐⭐⭐⭐  | ⭐⭐⭐⭐⭐ | Presentations, sharing
+SMPL Model      | ⭐⭐⭐⭐⭐ | ⭐⭐    | Research papers
+Unity + Mixamo  | ⭐⭐⭐⭐⭐ | ⭐⭐⭐   | Professional demos
+
+================================================================================
+RECOMMENDED FOR YOUR PROJECT
+================================================================================
+
+For Bharatanatyam Domain Experts:
+→ Use Web Viewer (web_pose_viewer.html)
+  - Easy to understand
+  - Interactive controls
+  - No technical knowledge needed
+
+For Research Presentations:
+→ Use PyVista Video Export
+  - High quality
+  - Professional appearance
+  - Easy to embed in slides
+
+For Final Demo:
+→ Use Unity + Mixamo
+  - Professional quality
+  - Smooth animations
+  - Impressive visuals
+
+================================================================================
+FILES CREATED
+================================================================================
+
+visualize_human_mesh.py      - PyVista visualization (Python)
+web_pose_viewer.html          - Web-based 3D viewer (HTML/JS)
+visualize_with_smpl.py        - SMPL model integration (Advanced)
+unity_pose_visualizer.cs      - Unity script (C#)
+VISUALIZATION_GUIDE.md        - Complete guide
+
+================================================================================
+QUICK TEST
+================================================================================
+
+Try this now:
+
+1. Install PyVista:
+   pip install pyvista
+
+2. Run interactive viewer:
+   python visualize_human_mesh.py --json generated_poses.json --mode interactive
+
+3. Navigate with arrow keys, rotate with mouse
+
+================================================================================
+NEXT STEPS
+================================================================================
+
+1. Test PyVista interactive viewer
+2. Create a demo video for presentation
+3. Set up web viewer for domain expert feedback
+4. (Optional) Create Unity demo for final presentation
+
+================================================================================
+SUPPORT
+================================================================================
+
+See VISUALIZATION_GUIDE.md for:
+- Detailed instructions
+- Customization options
+- Troubleshooting
+- Advanced features
+
+================================================================================
